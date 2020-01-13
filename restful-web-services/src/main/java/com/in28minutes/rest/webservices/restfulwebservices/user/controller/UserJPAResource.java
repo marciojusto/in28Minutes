@@ -3,6 +3,7 @@ package com.in28minutes.rest.webservices.restfulwebservices.user.controller;
 import com.in28minutes.rest.webservices.restfulwebservices.user.entities.Post;
 import com.in28minutes.rest.webservices.restfulwebservices.user.entities.User;
 import com.in28minutes.rest.webservices.restfulwebservices.user.exceptions.UserNotFoundException;
+import com.in28minutes.rest.webservices.restfulwebservices.user.repository.PostRepository;
 import com.in28minutes.rest.webservices.restfulwebservices.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
@@ -24,9 +25,12 @@ public class UserJPAResource {
 
     private final UserRepository repository;
 
+    private final PostRepository postRepository;
+
     @Autowired
-    public UserJPAResource(UserRepository repository) {
+    public UserJPAResource(UserRepository repository, PostRepository postRepository) {
         this.repository = repository;
+        this.postRepository = postRepository;
     }
 
     @GetMapping(path = "/jpa/users")
@@ -74,4 +78,24 @@ public class UserJPAResource {
         return userOptional.get().getPosts();
     }
 
+    @PostMapping(path = "/jpa/users/{id}/posts")
+    public ResponseEntity<Object> createPost(@PathVariable long id, @RequestBody Post post) {
+        Optional<User> userOptional = repository.findById(id);
+        if(userOptional.isEmpty()) {
+            throw new UserNotFoundException("id-"+id);
+        }
+
+        User user = userOptional.get();
+
+        post.setUser(user);
+
+        postRepository.save(post);
+
+        URI uri = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(post.getId())
+                .toUri();
+        return ResponseEntity.created(uri).build();
+    }
 }
