@@ -1,0 +1,18 @@
+spring:
+  jackson:
+    date-format: java.text.SimpleDateFormat
+  messages:
+    basename: messages
+  security:
+    user:
+      name: username
+      password: password
+  jpa:
+    show-sql: true
+  h2:
+    console:
+      enabled: true
+management:
+  endpoint:
+    beans:
+      enabled: true

@@ -1,8 +1,9 @@
 package com.in28minutes.rest.webservices.restfulwebservices.user.controller;
 
+import com.in28minutes.rest.webservices.restfulwebservices.user.entities.Post;
 import com.in28minutes.rest.webservices.restfulwebservices.user.entities.User;
 import com.in28minutes.rest.webservices.restfulwebservices.user.exceptions.UserNotFoundException;
-import com.in28minutes.rest.webservices.restfulwebservices.user.services.UserDAOService;
+import com.in28minutes.rest.webservices.restfulwebservices.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
@@ -13,51 +14,49 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
-public class UserResource {
+public class UserJPAResource {
 
-    private final UserDAOService service;
+    private final UserRepository repository;
 
     @Autowired
-    public UserResource(UserDAOService service) {
-        this.service = service;
+    public UserJPAResource(UserRepository repository) {
+        this.repository = repository;
     }
 
-    @GetMapping(path = "/users")
+    @GetMapping(path = "/jpa/users")
     public List<User> retrieveAllUsers() {
-        return service.findAll();
+        return repository.findAll();
     }
 
-    @GetMapping(path = "/users/{id}")
+    @GetMapping(path = "/jpa/users/{id}")
     public Resource<User> retrieveUser(@PathVariable long id) {
-        User user = service.findOne(id);
-        if(user == null) {
+        Optional<User> user = repository.findById(id);
+        if(user.isEmpty()) {
             throw new UserNotFoundException(String.format("id-%s", id));
         }
 
         //HATEOAS [Hypermedia as the Engine of Application State]
-        Resource<User> resource = new Resource<User>(user);
+        Resource<User> resource = new Resource<User>(user.get());
         ControllerLinkBuilder linkTo = linkTo(methodOn(this.getClass()).retrieveAllUsers());
         resource.add(linkTo.withRel("all-users"));
 
         return resource;
     }
 
-    @DeleteMapping(path = "/users/{id}")
+    @DeleteMapping(path = "/jpa/users/{id}")
     public void deleteById(@PathVariable long id) {
-        User user = service.deleteById(id);
-        if(user == null) {
-            throw new UserNotFoundException(String.format("id-%s", id));
-        }
+        repository.deleteById(id);
     }
 
-    @PostMapping(path = "/users")
+    @PostMapping(path = "/jpa/users")
     public ResponseEntity<Object> createUser(@Valid @RequestBody User user) {
-        User userCreated = service.save(user);
+        User userCreated = repository.save(user);
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
                 .path("/{id}")
@@ -65,4 +64,14 @@ public class UserResource {
                 .toUri();
         return ResponseEntity.created(uri).build();
     }
+
+    @GetMapping(path = "/jpa/users/{id}/posts")
+    public List<Post> retrieveAllPosts(@PathVariable long id) {
+        Optional<User> userOptional = repository.findById(id);
+        if(userOptional.isEmpty()) {
+            throw new UserNotFoundException("id-"+id);
+        }
+        return userOptional.get().getPosts();
+    }
+
 }
