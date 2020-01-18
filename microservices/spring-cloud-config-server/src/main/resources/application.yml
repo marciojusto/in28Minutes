@@ -1,5 +1,5 @@
 spring:
   application:
-    name: springl-cloud-config-server
+    name: spring-cloud-config-server
 server:
   port: 8888
