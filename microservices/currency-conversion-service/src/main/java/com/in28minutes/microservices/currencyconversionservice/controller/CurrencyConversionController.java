@@ -2,6 +2,8 @@ package com.in28minutes.microservices.currencyconversionservice.controller;
 
 import com.in28minutes.microservices.currencyconversionservice.beans.CurrencyConversionBean;
 import com.in28minutes.microservices.currencyconversionservice.services.CurrencyExchangeServiceProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +18,8 @@ import java.util.Map;
 
 @RestController
 public class CurrencyConversionController {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final CurrencyExchangeServiceProxy serviceProxy;
 
@@ -44,10 +48,12 @@ public class CurrencyConversionController {
 
     @GetMapping("/currency-converter-feign/from/{from}/to/{to}/quantity/{quantity}")
     public ResponseEntity<?> convertCurrencyFeign(@PathVariable String from,
-                                                                  @PathVariable String to,
-                                                                  @PathVariable BigDecimal quantity) {
+                                                  @PathVariable String to,
+                                                  @PathVariable BigDecimal quantity) {
 
-       CurrencyConversionBean response = serviceProxy.retrieveExchangeValue(from, to);
+        CurrencyConversionBean response = serviceProxy.retrieveExchangeValue(from, to);
+
+        logger.info("{}", response);
 
         return new ResponseEntity<CurrencyConversionBean>(new CurrencyConversionBean(response.getId(), from, to,
                 response.getConversionMultiple(), quantity,

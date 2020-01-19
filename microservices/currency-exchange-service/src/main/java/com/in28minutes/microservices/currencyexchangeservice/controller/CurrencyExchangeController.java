@@ -2,6 +2,8 @@ package com.in28minutes.microservices.currencyexchangeservice.controller;
 
 import com.in28minutes.microservices.currencyexchangeservice.entities.ExchangeValue;
 import com.in28minutes.microservices.currencyexchangeservice.repository.ExchangeValueRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class CurrencyExchangeController {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final Environment environment;
 
@@ -25,6 +29,9 @@ public class CurrencyExchangeController {
     public ResponseEntity<ExchangeValue> retrieveExchangeValue(@PathVariable String from, @PathVariable String to) {
         ExchangeValue exchangeValue = repository.findByFromAndTo(from, to);
         exchangeValue.setPort(Integer.parseInt(environment.getProperty("local.server.port")));
+
+        logger.info("{}", exchangeValue);
+
         return new ResponseEntity<ExchangeValue>(exchangeValue, HttpStatus.OK);
     }
 }
