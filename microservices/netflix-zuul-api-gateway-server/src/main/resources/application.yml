@@ -1,6 +1,12 @@
 spring:
   application:
     name: netflix-zuul-api-gateway-server
+  sleuth:
+    sampler:
+      percentage: 1.0
+  zipkin:
+    sender:
+      type: web
 server:
   port: 8765
 eureka:
