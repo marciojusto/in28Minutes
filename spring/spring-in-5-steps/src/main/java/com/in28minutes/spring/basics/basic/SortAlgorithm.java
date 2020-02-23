@@ -1,4 +1,4 @@
-package com.in28minutes.spring.basics;
+package com.in28minutes.spring.basics.basic;
 
 public interface SortAlgorithm {
 
